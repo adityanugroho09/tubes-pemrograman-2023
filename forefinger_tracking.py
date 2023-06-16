@@ -7,7 +7,7 @@ mp_hands = mp.solutions.hands
 
 def track_fingers():
     # Open video capture
-    cap = cv2.VideoCapture(0)
+    cap2 = cv2.VideoCapture(0)
 
     # Initialize hands object
     with mp_hands.Hands(static_image_mode=False,
@@ -18,9 +18,9 @@ def track_fingers():
         # Initialize selected menu variable
         selected_menu = None
 
-        while cap.isOpened():
+        while cap2.isOpened():
             # Read frame from the video capture
-            ret, frame = cap.read()
+            ret, frame = cap2.read()
             if not ret:
                 break
 
@@ -87,7 +87,7 @@ def track_fingers():
                 break
 
     # Release the video capture and close all windows
-    cap.release()
+    cap2.release()
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
