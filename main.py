@@ -49,31 +49,35 @@ def track_fingers():
                     # Draw circle at the finger tip
                     cv2.circle(frame, (index_x, index_y), 8, (0, 255, 0), -1)
 
-                    # Check if the forefinger is on the "English" menu
-                    if 20 <= index_x <= 120 and frame.shape[0] // 2 - 50 <= index_y <= frame.shape[0] // 2 + 50:
-                        selected_menu = "English"
-                    # Check if the forefinger is on the "Jawa" menu
-                    elif frame.shape[1] - 120 <= index_x <= frame.shape[1] - 20 and frame.shape[0] // 2 - 50 <= index_y <= frame.shape[0] // 2 + 50:
-                        selected_menu = "Jawa"
-                    elif selected_menu == "English":
-                        selected_menu = "English"
-                    elif selected_menu == "Jawa":
-                        selected_menu = "Jawa"
+                    print(index_x, index_y)
+                    # Check if the forefinger is on the "GBK" menu
+                    if 320 <= index_x <= 450 and frame.shape[0] // 2 - 20 <= index_y <= frame.shape[0] // 2 + 20:
+                        selected_menu = "GBK"
+                    # Check if the forefinger is on the "Normal" menu
+                    elif 780 <= index_x <= 975 and frame.shape[0] // 2 - 20 <= index_y <= frame.shape[0] // 2 + 20:
+                        selected_menu = "Normal"
+                    elif selected_menu == "GBK":
+                        selected_menu = "GBK"
+                    elif selected_menu == "Normal":
+                        selected_menu = "Normal"
+
+            cv2.putText(frame, "Gunakan Telunjuk Untuk Memilih", (frame.shape[0] // 2, frame.shape[0] // 2 - 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255))
+            cv2.putText(frame, "Tekan 'Q' Untuk Keluar Dari Game", (frame.shape[0] // 2, frame.shape[0] // 2 + 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255))
 
             if selected_menu == None:
                 # Add text labels
                 cv2.rectangle(frame, (20, frame.shape[0] // 2 - 50), (150, frame.shape[0] // 2 + 50), (0, 0, 0), -1)
-                cv2.putText(frame, "English", (20, frame.shape[0] // 2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0) if selected_menu == "English" else (255, 255, 255), 2, cv2.LINE_AA)
-                cv2.putText(frame, "Jawa", (frame.shape[1] - 120, frame.shape[0] // 2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0) if selected_menu == "Jawa" else (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.putText(frame, "Suit GBK", (320, frame.shape[0] // 2),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0) if selected_menu == "GBK" else (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.putText(frame, "Suit Normal", (frame.shape[1] - 500, frame.shape[0] // 2),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0) if selected_menu == "Normal" else (255, 255, 255), 2, cv2.LINE_AA)
 
             # Check the selected menu and display the appropriate message
-            if selected_menu == "English":
+            if selected_menu == "GBK":
                 # Erase all menu displays
                 cv2.rectangle(frame, (20, frame.shape[0] // 2 - 50), (frame.shape[1] - 20, frame.shape[0] // 2 + 50), (0, 0, 0), -1)
                 # Display the message
-                cv2.putText(frame, "You are in English Game", (frame.shape[1] // 2 - 200, frame.shape[0] // 2),
+                cv2.putText(frame, "You are in GBK Game", (frame.shape[1] // 2 - 200, frame.shape[0] // 2),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 # Display back menu
                 cv2.putText(frame, "Back", (frame.shape[1] // 2 - 200, frame.shape[0] // 2 - 200),
@@ -81,11 +85,11 @@ def track_fingers():
                 cv2.destroyAllWindows()
                 main_game(selected_menu)
 
-            elif selected_menu == "Jawa":
+            elif selected_menu == "Normal":
                 # Erase all menu displays
                 cv2.rectangle(frame, (20, frame.shape[0] // 2 - 50), (frame.shape[1] - 20, frame.shape[0] // 2 + 50), (0, 0, 0),-1)
                 # Display the message
-                cv2.putText(frame, "You are in Jawa Game", (frame.shape[1] // 2 - 180, frame.shape[0] // 2),
+                cv2.putText(frame, "You are in Normal Game", (frame.shape[1] // 2 - 180, frame.shape[0] // 2),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.destroyAllWindows()
                 main_game(selected_menu)
@@ -149,7 +153,7 @@ def main_game(selected_menu):
                         fingers = detector.fingersUp(hand)
 
                         # Deteksi Jari dan Penentuan Palyer Move
-                        if selected_menu == "English":
+                        if selected_menu == "GBK":
                             if fingers == [0,0,0,0,0]:
                                 playerMove = 1
                             if fingers == [1,1,1,1,1]:
@@ -158,7 +162,7 @@ def main_game(selected_menu):
                                 playerMove = 3
                             # Generate Nomor Acak
                             randomNumber = random.randint(1, 3)
-                        elif selected_menu == "Jawa":
+                        elif selected_menu == "Normal":
                             if fingers == [1,0,0,0,0]:
                                 playerMove = 4
                             if fingers == [0,1,0,0,0]:
@@ -171,7 +175,7 @@ def main_game(selected_menu):
                         imgAI = cv2.imread(f'Resources/{randomNumber}.png',cv2.IMREAD_UNCHANGED)
                         imgBG = cvzone.overlayPNG(imgBG, imgAI, (149, 310))
 
-                        if selected_menu == "English":
+                        if selected_menu == "GBK":
                             # Kondisi Player Menang
                             if (playerMove == 1 and randomNumber == 3) \
                                 or (playerMove == 2 and randomNumber == 1) \
@@ -184,7 +188,7 @@ def main_game(selected_menu):
                                     or (playerMove == 2 and randomNumber == 3):
                                 scores[0] += 1
                             print(playerMove)
-                        if selected_menu == "Jawa":
+                        if selected_menu == "Normal":
                             # Palyer Wins
                             if (playerMove == 4 and randomNumber == 5) \
                                 or (playerMove == 5 and randomNumber == 6) \
@@ -217,6 +221,12 @@ def main_game(selected_menu):
             startGame = True
             initialTime = time.time()
             stateResult = False
+        elif key == ord('b'):
+            cv2.destroyAllWindows()
+            track_fingers()
+        elif key == ord('q'):
+            break
+            
 
 if __name__ == '__main__':
     track_fingers()
