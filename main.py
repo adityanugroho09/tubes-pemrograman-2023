@@ -4,56 +4,64 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import time
 import random
+import sys
+import pygame
+from pygame.locals import *
+from pygame import mixer
 
-# Initialize Mediapipe hands
+# Inisialisasi Mediapipe hands
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
+mixer.init()
+mixer.music.load('Resources/background_music.ogg')
+mixer.music.play(-1)
+
 def track_fingers():
-    # Open video capture
+    # Membuka Video Capture
     cap2 = cv2.VideoCapture(0)
     cap2.set(3,1280)
     cap2.set(4,720)
 
-    # Initialize hands object
+    # Inisialisasi Object Hands
     with mp_hands.Hands(static_image_mode=False,
                         max_num_hands=1,
                         min_detection_confidence=0.5,
                         min_tracking_confidence=0.5) as hands:
 
-        # Initialize selected menu variable
+        # Inisisalisasi variabel selected menu 
         selected_menu = None
 
         while cap2.isOpened():
-            # Read frame from the video capture
+            # Membaca Frame Dari Video Capture 
             ret, frame = cap2.read()
             if not ret:
                 break
 
-            # Flip the frame horizontally for a mirrored display
+            # Miroring Display
             frame = cv2.flip(frame, 1)
 
             # Convert the frame to RGB
             image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            # Process the frame with Mediapipe
+            # Memroses Frame dengan mediapipe
             results = hands.process(image_rgb)
 
-            # Check if hand landmarks are detected
+            # Check apakah hand landmark terdeteksi
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
-                    # Get the coordinates of the index finger
+                    # Mendapatkan Koordinat Jari
                     index_finger_landmark = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
                     index_x, index_y = int(index_finger_landmark.x * frame.shape[1]), int(index_finger_landmark.y * frame.shape[0])
 
-                    # Draw circle at the finger tip
+                    # Gambar lingkaran di ujung jari
                     cv2.circle(frame, (index_x, index_y), 8, (0, 255, 0), -1)
 
                     print(index_x, index_y)
-                    # Check if the forefinger is on the "GBK" menu
+                    # Check jika telunjnuk berada di "GBK"
                     if 320 <= index_x <= 450 and frame.shape[0] // 2 - 20 <= index_y <= frame.shape[0] // 2 + 20:
                         selected_menu = "GBK"
-                    # Check if the forefinger is on the "Normal" menu
+                    # Check jika telunjnuk berada di "Normal"
                     elif 780 <= index_x <= 975 and frame.shape[0] // 2 - 20 <= index_y <= frame.shape[0] // 2 + 20:
                         selected_menu = "Normal"
                     elif selected_menu == "GBK":
@@ -61,47 +69,40 @@ def track_fingers():
                     elif selected_menu == "Normal":
                         selected_menu = "Normal"
 
-            cv2.putText(frame, "Gunakan Telunjuk Untuk Memilih", (frame.shape[0] // 2, frame.shape[0] // 2 - 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255))
-            cv2.putText(frame, "Tekan 'Q' Untuk Keluar Dari Game", (frame.shape[0] // 2, frame.shape[0] // 2 + 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255))
+            cv2.putText(frame, "SUIT GAME", (frame.shape[0] // 2 + 180, frame.shape[0] // 2 - 140), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 140, 255, 2), 2)
+            cv2.putText(frame, "Gunakan Telunjuk Untuk Memilih", (frame.shape[0] // 2, frame.shape[0] // 2 - 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            cv2.putText(frame, "Tekan 'Esc' Untuk Keluar Dari Game", (frame.shape[0] // 2, frame.shape[0] // 2 + 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            cv2.putText(frame, "Tekan 'Backspace' Untuk Kembali", (frame.shape[0] // 2, frame.shape[0] // 2 + 180), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
             if selected_menu == None:
-                # Add text labels
-                cv2.rectangle(frame, (20, frame.shape[0] // 2 - 50), (150, frame.shape[0] // 2 + 50), (0, 0, 0), -1)
+                # Menambahkan Text Pilihan Menu
+                cv2.rectangle(frame, (475, frame.shape[0] // 2 - 50), (315, frame.shape[0] // 2 + 20), (0, 140, 255), -1)
                 cv2.putText(frame, "Suit GBK", (320, frame.shape[0] // 2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0) if selected_menu == "GBK" else (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                cv2.rectangle(frame, (775, frame.shape[0] // 2 - 50), (980, frame.shape[0] // 2 + 20), (0, 140, 255), -1)
                 cv2.putText(frame, "Suit Normal", (frame.shape[1] - 500, frame.shape[0] // 2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0) if selected_menu == "Normal" else (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
-            # Check the selected menu and display the appropriate message
+            # Check terhadap menu yang dipilih dan menampilkan window yang sesuai
             if selected_menu == "GBK":
-                # Erase all menu displays
-                cv2.rectangle(frame, (20, frame.shape[0] // 2 - 50), (frame.shape[1] - 20, frame.shape[0] // 2 + 50), (0, 0, 0), -1)
-                # Display the message
-                cv2.putText(frame, "You are in GBK Game", (frame.shape[1] // 2 - 200, frame.shape[0] // 2),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-                # Display back menu
-                cv2.putText(frame, "Back", (frame.shape[1] // 2 - 200, frame.shape[0] // 2 - 200),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.destroyAllWindows()
                 main_game(selected_menu)
 
             elif selected_menu == "Normal":
-                # Erase all menu displays
-                cv2.rectangle(frame, (20, frame.shape[0] // 2 - 50), (frame.shape[1] - 20, frame.shape[0] // 2 + 50), (0, 0, 0),-1)
-                # Display the message
-                cv2.putText(frame, "You are in Normal Game", (frame.shape[1] // 2 - 180, frame.shape[0] // 2),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.destroyAllWindows()
                 main_game(selected_menu)
 
-            # Display the frame with the finger positions and menu selection
+            # Menampilkan frame dengan posisi jari dan pilihan menu 
             cv2.imshow('Finger Tracking', frame)
 
-            # Check for 'q' key press to exit
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            # Check esc untuk keluar
+            if cv2.waitKey(1) & 0xFF == 27:
+                mixer.music.stop()
+                pygame.quit()
+                sys.exit()
                 break
 
-    # Release the video capture and close all windows
+    # Release Video Capture dan Destroy Semua Window
     cap2.release()
     cv2.destroyAllWindows()
 
@@ -124,8 +125,12 @@ def main_game(selected_menu):
     selected_menu = selected_menu
 
     while True:
-        imgBG = cv2.imread("Resources/BG.png")
-        success, img = cap.read()
+        if selected_menu == "GBK":
+            imgBG = cv2.imread("Resources/BG2.png")
+            success, img = cap.read()
+        elif selected_menu == "Normal":
+            imgBG = cv2.imread("Resources/BG3.png")
+            success, img = cap.read()
 
         # Mengatur Ukuran Layar Kamera
         imgScaled = cv2.resize(img,(0,0),None,0.875,0.875)
@@ -139,7 +144,7 @@ def main_game(selected_menu):
 
             if stateResult is False:
                 timer = time.time() - initialTime
-                cv2.putText(imgBG, str(int(timer)), (605, 435), cv2.FONT_HERSHEY_PLAIN, 6, (255, 0, 255), 4)
+                cv2.putText(imgBG, str(int(timer)), (618, 400), cv2.FONT_HERSHEY_PLAIN, 6, (255, 255, 255), 4)
 
                 # Timer
                 if timer > 3:
@@ -169,6 +174,7 @@ def main_game(selected_menu):
                                 playerMove = 5
                             if fingers == [0,0,0,0,1]:
                                 playerMove = 6
+                            # Generate Nomor Acak
                             randomNumber = random.randint(4, 6)
 
                         # Akses Gambar
@@ -189,13 +195,13 @@ def main_game(selected_menu):
                                 scores[0] += 1
                             print(playerMove)
                         if selected_menu == "Normal":
-                            # Palyer Wins
+                            # Palyer Menang
                             if (playerMove == 4 and randomNumber == 5) \
                                 or (playerMove == 5 and randomNumber == 6) \
                                     or (playerMove == 6 and randomNumber == 4):
                                 scores[1] += 1
                     
-                            # AI Wins
+                            # AI Menang
                             if (playerMove == 5 and randomNumber == 4) \
                                 or (playerMove == 6 and randomNumber == 5) \
                                     or (playerMove == 4 and randomNumber == 6):
@@ -221,13 +227,21 @@ def main_game(selected_menu):
             startGame = True
             initialTime = time.time()
             stateResult = False
-        elif key == ord('b'):
+        elif key == 8:
             cv2.destroyAllWindows()
             track_fingers()
-        elif key == ord('q'):
+        elif key == 27:
+            mixer.music.stop()
+            pygame.quit()
+            sys.exit(0)
             break
+    
+        # Keluar Game ketika tekan silang di window
+        if cv2.getWindowProperty('imgBG', cv2.WND_PROP_VISIBLE) < 1:
+            mixer.music.stop()
+            pygame.quit()
+            sys.exit()
             
-
 if __name__ == '__main__':
     track_fingers()
     main_game()
