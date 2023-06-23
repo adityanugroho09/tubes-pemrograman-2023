@@ -20,8 +20,8 @@ mixer.music.play(-1)
 def track_fingers():
     # Membuka Video Capture
     cap2 = cv2.VideoCapture(0)
-    cap2.set(3,1280)
-    cap2.set(4,720)
+    cap2.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap2.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
     # Inisialisasi Object Hands
     with mp_hands.Hands(static_image_mode=False,
@@ -109,8 +109,8 @@ def track_fingers():
 def main_game(selected_menu):
     # Penggunaan Camera
     cap = cv2.VideoCapture(0)
-    cap.set(3,640)
-    cap.set(4,480)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
     detector = HandDetector(maxHands=1)
 
